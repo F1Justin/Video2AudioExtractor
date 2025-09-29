@@ -1,0 +1,47 @@
+name: build-windows-exe
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Prepare ffmpeg folder
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ffmpeg | Out-Null
+          choco install ffmpeg -y
+          Copy-Item "$env:ChocolateyInstall\bin\ffmpeg.exe" ffmpeg\ffmpeg.exe
+          Copy-Item "$env:ChocolateyInstall\bin\ffprobe.exe" ffmpeg\ffprobe.exe
+
+      - name: Build with PyInstaller
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm app.spec
+          Get-ChildItem -Path dist -Recurse
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Video2AudioExtractor-windows
+          path: dist/Video2AudioExtractor/**
+
+
