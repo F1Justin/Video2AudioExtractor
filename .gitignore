@@ -9,7 +9,6 @@ venv/
 .venv/
 build/
 dist/
-*.spec
 *.log
 /.idea/
 /.vscode/
@@ -20,4 +19,5 @@ coverage.xml
 *.coverage
 .env
 ffmpeg/
+ffmpeg-*/
 
